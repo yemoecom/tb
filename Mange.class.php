@@ -1,27 +1,50 @@
 <?php
 class Mange{
-	public function mysql_zy($str){
-        //判断是否开启了表单自动转义字符
-        if (!get_magic_quotes_gpc()) {
-            return mysql_real_escape_string($str);
-        }else {
-            return $str;
+	public $r=array();
+	public function getejson($h5api,$r){ 
+		global $cookie;
+		//参数处理
+		$h5api=str_replace('jsonp','json',$h5api);
+		if(stripos($h5api,'&sign') || stripos($h5api,'&t=')){
+			$h5api=preg_replace('/&sign=\w+/','',$h5api);
+			$h5api=preg_replace('/&t=\d+/','',$h5api);
+		}
+		if(stripos($h5api,'&data')){
+			preg_match('/&data=(.*7D$)/',$h5api,$data);
+			$h5api=preg_replace('/&data=.*7D$/','',$h5api);
+			$data=$data[1];
+		}
+		if(empty($data)) exit("参数的data不存在或者错误");
+		if(strpos($data,'%3A')) $data = urldecode($data);
+		$data=$this->editdata($r,$data);//条件查询
+		$cookie = $this->getcookie();          
+		$appKey= 12574478;                                 
+		$_m_h5_tk= $this->get_word($cookie,'_m_h5_tk=', '_');//从cookie中取出_m_h5_tk，必须要去掉后面的部分
+		$t =$this->getMillisecond();//生成时间戳   
+		$url_data = urlencode($data);                                    
+		$sign=md5($_m_h5_tk."&".$t."&".$appKey."&".$data); //生成sign
+		$url = $h5api."&t=".$t."&sign=".$sign."&data=".$url_data;
+		$d=$this->curl($url);//获取数据
+		return $d;
         }
-    }
+		
+	//处理data数据 $r是一个数组
+	public function editdata($r,$data){
+		if(!is_array($r)) exit('检查你的参数是否是数组');
+		foreach($r as $k=>$v){
+			if(stripos($data,$k)){
+				$data=preg_replace('/"'.$k.'":".*?"/','"'.$k.'":"'.$v.'"',$data);
+					}
+		}
+		return $data;
+	}
 	
-	public function getejson($h5api,$data){ 
-		 $cookie = $this->getcookie();  
-		 $tmp_url = "https://market.m.taobao.com/app/tb-windmill-app/ishopping/index";
-		 $Browser  = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36';                
-		 $appKey= 12574478;                                 
-		 $_m_h5_tk= $this->get_word($cookie,'_m_h5_tk=', '_');//从cookie中取出_m_h5_tk，必须要去掉后面的部分
-		 $t =$this->getMillisecond();//生成时间戳   
-		if(!strpos($data,'%3A')) $url_data = urlencode($data);
-		 $headers = array('Content-type:application/x-www-form-urlencoded','Accept:application/json');                                      
-		 $sign=md5($_m_h5_tk."&".$t."&".$appKey."&".$data); //生成sign
-		 $url = $h5api."&t=".$t."&sign=".$sign."&data=".$url_data;
-		 
-		 $ch = curl_init($url);                
+	public function curl($url){
+		global $cookie;
+		$tmp_url = "https://market.m.taobao.com/app/tb-windmill-app/ishopping/index";
+		$Browser  = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36';
+		$headers = array('Content-type:application/x-www-form-urlencoded','Accept:application/json');
+		$ch = curl_init($url);                
 		 curl_setopt($ch,CURLOPT_HEADER,0);
 		 curl_setopt($ch,CURLOPT_REFERER, $tmp_url);        
 		 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -33,8 +56,7 @@ class Mange{
 		 $content = curl_exec($ch);                  
 		 curl_close($ch); 
 		return $content;
-        }
-	
+	}
 	//获取cookie
 	public function getcookie(){
 	 $tmp_url = "https://market.m.taobao.com/app/tb-windmill-app/ishopping/index";//伪造来路
@@ -77,34 +99,5 @@ class Mange{
                 list($t1, $t2) = explode(' ', microtime());
                 return (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
         }
-	 
-	public function safe($string){
-	$string = preg_replace("'<script[^>]*?>.*?</script>'si", "", $string);//去掉javascript
-	$string = preg_replace("'<[\/\!]*?[^<>]*?>'si", "", $string);         //去掉HTML标记
-	$string = preg_replace("'([\r\n])[\s]+'", "", $string);               //去掉空白字符
-	$string = mb_ereg_replace('^(　| )+', '', $string);
-	$string = mb_ereg_replace('(　| )+$', '', $string);
-	$string = preg_replace("'&(quot|#34);'i", "", $string);               //替换HTML实体
-	$string = preg_replace("'&(amp|#38);'i", "", $string);
-	$string = preg_replace("'&(lt|#60);'i", "", $string);
-	$string = preg_replace("'&(gt|#62);'i", "", $string);
-	$string = preg_replace("'&(nbsp|#160);'i", "", $string);
-	$string=str_replace("%","",$string);
-	$string=str_replace("`","",$string);
-	$string=str_replace("\t","",$string);
-	$string=str_replace("%20","",$string);
-	$string=str_replace("%27","",$string);
-	$string=str_replace("*","",$string);
-	$string=str_replace("'","",$string);
-	$string=str_replace("\"","",$string);
-	//$string=str_replace("/","",$string);
-	$string=str_replace(";","",$string);
-	$string=str_replace("#","",$string);
-	$string=str_replace("--","",$string);
-	$string=addslashes($string);
-	return $string;
-	}	 
-
-
+	 	 
 }
-?>
