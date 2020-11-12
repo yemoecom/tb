@@ -1,7 +1,9 @@
 <?php
 class Mange{
 	public $r=array();
-	public function getejson($h5api,$r){ 
+	public $_is_cookie=1;
+	public $cookie=''; //如果获取的cookie为空请在本地使用自己cookie
+	public function getejson($h5api,$r,$cookie){ 
 		global $cookie;
 		//参数处理
 		$h5api=str_replace('jsonp','json',$h5api);
@@ -16,8 +18,19 @@ class Mange{
 		}
 		if(empty($data)) exit("参数的data不存在或者错误");
 		if(strpos($data,'%3A')) $data = urldecode($data);
-		$data=$this->editdata($r,$data);//条件查询
-		$cookie = $this->getcookie();          
+		if(!empty($r)) $data=$this->editdata($r,$data);//条件查询
+		$cookie = $this->getcookie();
+		if($cookie==''){//读取本地cookie 在浏览器登陆淘宝后在console里输入document.cookie
+			$cookie = "cookie.txt";
+			if(file_exists($cookie)){
+				$fp = fopen($cookie,"r")or die("文件不存在");
+				$cookie = fread($fp,filesize($cookie));
+				fclose($fp);
+			}else{
+				exit("目录下cookie.txt不存在或者为空，请更新cookie");
+			}
+		}
+		if(empty($cookie)) exit("你的cookie已失效");		        
 		$appKey= 12574478;                                 
 		$_m_h5_tk= $this->get_word($cookie,'_m_h5_tk=', '_');//从cookie中取出_m_h5_tk，必须要去掉后面的部分
 		$t =$this->getMillisecond();//生成时间戳   
@@ -59,12 +72,13 @@ class Mange{
 	}
 	//获取cookie
 	public function getcookie(){
+		global $url;
 	 $tmp_url = "https://market.m.taobao.com/app/tb-windmill-app/ishopping/index";//伪造来路
 	 $Browser  = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36';//模拟UA  这里用的是浏览器的             
 	 $cookie="";//初始化cookie
 	 $headers = array('Content-type:application/x-www-form-urlencoded','Accept:application/json');//发送请求的header
 		 for($j=0;$j<=2;$j++){  //需要请求两次，因为第一次访问失败之后才会生成cookie
-			 $url="https://h5api.m.taobao.com/h5/mtop.mediainteraction.video.detail/1.0/?appKey=12574478";//请求地址，必须带上这个默认的appkey
+			 $url="https://h5api.m.taobao.com/h5/mtop.user.getusersimple/1.0/?jsv=2.5.1&appKey=12574478&t=1560264165264&sign=11cb7c27c6a6970108e95bcf71c9cf6c&api=mtop.user.getUserSimple&v=1.0&ecode=1&sessionOption=AutoLoginOnly&jsonpIncPrefix=liblogin&type=jsonp&dataType=jsonp&callback=mtopjsonpliblogin1&data=%7B%7D";//请求地址，必须带上这个默认的appkey
 			 $ch = curl_init($url);        
 			 curl_setopt($ch,CURLOPT_HEADER,1);//输出头部信息，cookie就包含其中
 			 curl_setopt($ch,CURLOPT_REFERER, $tmp_url);        
