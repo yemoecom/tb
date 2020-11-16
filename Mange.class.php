@@ -48,7 +48,7 @@ class Mange{
 		if(!is_array($r)) exit('检查你的参数是否是数组');
 		foreach($r as $k=>$v){
 			if(stripos($data,$k)){
-				$data=preg_replace('/"'.$k.'":".*?"/','"'.$k.'":"'.$v.'"',$data);
+				$data=preg_replace('/"'.$k.'":".*"/','"'.$k.'":"'.$v.'"',$data);
 					}
 		}
 		return $data;
