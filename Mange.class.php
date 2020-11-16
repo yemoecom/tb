@@ -23,6 +23,7 @@ class Mange{
 		if($cookie==''){//读取本地cookie 在浏览器登陆淘宝后在console里输入document.cookie
 			$cookie = "cookie.txt";
 			if(file_exists($cookie)){
+				if(filesize($cookie)=='') exit('cookie内容为空');
 				$fp = fopen($cookie,"r")or die("文件不存在");
 				$cookie = fread($fp,filesize($cookie));
 				fclose($fp);
