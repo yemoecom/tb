@@ -1,15 +1,15 @@
 <?php
 class Mange{
 	public $r=array();
-	public $_is_cookie=1;
-	public $cookie=''; //如果获取的cookie为空请在本地使用自己cookie
-	public function getejson($h5api,$r,$cookie){ 
+	public $_is_cookie=0;
+	public function getejson($h5api,$r){ 
 		global $cookie;
 		//参数处理
 		$h5api=str_replace('jsonp','json',$h5api);
 		if(stripos($h5api,'&sign') || stripos($h5api,'&t=')){
 			$h5api=preg_replace('/&sign=\w+/','',$h5api);
 			$h5api=preg_replace('/&t=\d+/','',$h5api);
+			$h5api=preg_replace('/&callback=\w+/','',$h5api);
 		}
 		if(stripos($h5api,'&data')){
 			preg_match('/&data=(.*7D$)/',$h5api,$data);
@@ -18,12 +18,13 @@ class Mange{
 		}
 		if(empty($data)) exit("参数的data不存在或者错误");
 		if(strpos($data,'%3A')) $data = urldecode($data);
+		
+		
 		if(!empty($r)) $data=$this->editdata($r,$data);//条件查询
-		$cookie = $this->getcookie();
-		if($cookie==''){//读取本地cookie 在浏览器登陆淘宝后在console里输入document.cookie
+		$cookie = $this->getcookie();//获取cookie
+		if($cookie=='' || $_is_cookie==1){//读取本地cookie 在浏览器登陆淘宝后在console里输入document.cookie
 			$cookie = "cookie.txt";
 			if(file_exists($cookie)){
-				if(filesize($cookie)=='') exit('cookie内容为空');
 				$fp = fopen($cookie,"r")or die("文件不存在");
 				$cookie = fread($fp,filesize($cookie));
 				fclose($fp);
@@ -31,7 +32,7 @@ class Mange{
 				exit("目录下cookie.txt不存在或者为空，请更新cookie");
 			}
 		}
-		if(empty($cookie)) exit("你的cookie已失效");		        
+		if(empty($cookie)) exit("你的cookie为空！");		        
 		$appKey= 12574478;                                 
 		$_m_h5_tk= $this->get_word($cookie,'_m_h5_tk=', '_');//从cookie中取出_m_h5_tk，必须要去掉后面的部分
 		$t =$this->getMillisecond();//生成时间戳   
@@ -39,7 +40,7 @@ class Mange{
 		$sign=md5($_m_h5_tk."&".$t."&".$appKey."&".$data); //生成sign
 		$url = $h5api."&t=".$t."&sign=".$sign."&data=".$url_data;
 		$d=$this->curl($url);//获取数据
-		if(strpos($d,'RGV587_ERROR') || strpos($d,'令牌过期')) exit('你的cookie已失效！或者不支持次接口');
+		if(strpos($d,'RGV587_ERROR') || strpos($d,'令牌过期')) exit('1、你的cookie已失效！2、不支持此接口！3、你的data里参数错误');
 		return $d;
         }
 		
@@ -48,7 +49,7 @@ class Mange{
 		if(!is_array($r)) exit('检查你的参数是否是数组');
 		foreach($r as $k=>$v){
 			if(stripos($data,$k)){
-				$data=preg_replace('/"'.$k.'":".*"/','"'.$k.'":"'.$v.'"',$data);
+				$data=preg_replace('/"'.$k.'":".*?"/','"'.$k.'":"'.$v.'"',$data);
 					}
 		}
 		return $data;
@@ -80,7 +81,7 @@ class Mange{
 	 $cookie="";//初始化cookie
 	 $headers = array('Content-type:application/x-www-form-urlencoded','Accept:application/json');//发送请求的header
 		 for($j=0;$j<=2;$j++){  //需要请求两次，因为第一次访问失败之后才会生成cookie
-			 $url="https://h5api.m.taobao.com/h5/mtop.user.getusersimple/1.0/?jsv=2.5.1&appKey=12574478&t=1560264165264&sign=11cb7c27c6a6970108e95bcf71c9cf6c&api=mtop.user.getUserSimple&v=1.0&ecode=1&sessionOption=AutoLoginOnly&jsonpIncPrefix=liblogin&type=jsonp&dataType=jsonp&callback=mtopjsonpliblogin1&data=%7B%7D";//请求地址，必须带上这个默认的appkey
+			 $url=" https://h5api.m.taobao.com/h5/mtop.user.getusersimple/1.0/?jsv=2.5.1&appKey=12574478&t=1560264165264&sign=11cb7c27c6a6970108e95bcf71c9cf6c&api=mtop.user.getUserSimple&v=1.0&ecode=1&sessionOption=AutoLoginOnly&jsonpIncPrefix=liblogin&type=jsonp&dataType=jsonp&callback=mtopjsonpliblogin1&data=%7B%7D";//请求地址，必须带上这个默认的appkey
 			 $ch = curl_init($url);        
 			 curl_setopt($ch,CURLOPT_HEADER,1);//输出头部信息，cookie就包含其中
 			 curl_setopt($ch,CURLOPT_REFERER, $tmp_url);        
@@ -115,5 +116,54 @@ class Mange{
                 list($t1, $t2) = explode(' ', microtime());
                 return (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
         }
-	 	 
+	 
+	public function requery($url){
+			$header = array (
+		  0 => 'dnt: 1',
+		  1 => 'accept-encoding: gzip, deflate, br',
+		  2 => 'accept-language: zh-CN',
+		  3 => 'user-agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36 Maxthon/5.3.8.2000',
+		  4 => 'accept: */*',
+		  5 => 'referer:  https://detail.m.tmall.com/item.htm?id=622357946251&ali_refid=a3_430677_1007:120252054:T:4132335289009984193_0_100:241e316bf55e23b8cef3263d25b153d0&ali_trackid=31_241e316bf55e23b8cef3263d25b153d0&spm=a2e1j.11213078.guess.5',
+		  6 => 'authority: h5api.m.tmall.com',
+			);
+			$postData = '';
+			$timeout = 10;
+
+			$ch  = curl_init($url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);       //返回数据不直接输出
+			curl_setopt($ch, CURLOPT_ENCODING, "gzip");        //指定gzip压缩
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);    //302/301
+			//SSL
+			if(substr($url, 0, 8) === 'https://') {
+				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+				//error:14077458:SSL routines:SSL23_GET_SERVER_HELLO:reason(1112)解决
+				//值有0-6，请参考手册，值1不行试试其他值
+				//curl_setopt($ch, CURLOPT_SSLVERSION, 1);
+			}
+			//post数据
+			if(!empty($postData)) {
+				curl_setopt($ch, CURLOPT_POST, 1);               //发送POST类型数据
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $postData); //POST数据，$post可以是数组（multipart/form-data），也可以是拼接参数串（application/x-www-form-urlencoded）
+			}
+			if(!empty($cookie)) {
+				$header[] = $cookie;
+			}
+			if(!empty($header)) {
+				curl_setopt($ch, CURLOPT_HTTPHEADER, $header);     //使用header头信息
+			}
+			//超时时间
+			curl_setopt($ch, CURLOPT_TIMEOUT, (int)$timeout);
+			//执行
+			$content = curl_exec($ch);
+			if($error = curl_error($ch)) {
+				//log error
+				error_log($error);
+			}
+			curl_close($ch);
+
+			// $content 是请求结果
+			return $content;
+	}
 }
