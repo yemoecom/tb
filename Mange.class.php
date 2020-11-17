@@ -39,7 +39,7 @@ class Mange{
 		$sign=md5($_m_h5_tk."&".$t."&".$appKey."&".$data); //生成sign
 		$url = $h5api."&t=".$t."&sign=".$sign."&data=".$url_data;
 		$d=$this->curl($url);//获取数据
-		if(strpos($d,'令牌过期')) exit('请更新cookie');
+		if(strpos($d,'RGV587_ERROR') || strpos($d,'令牌过期')) exit('你的cookie已失效！或者不支持次接口');
 		return $d;
         }
 		
