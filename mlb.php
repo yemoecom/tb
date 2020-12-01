@@ -1,3 +1,4 @@
+<?php
 define('ROOT_PATH',dirname(__FILE__));
 require ROOT_PATH.'/init.php';
 $r=array('https://snzdy.tmall.com/','583016369093','玩具','3');
