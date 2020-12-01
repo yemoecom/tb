@@ -112,11 +112,13 @@ class Lists extends Mange{
 	*/
 	public function _getkwshops($arr){
 		$arr=$this->_set_arr($arr);
+		$page=(int)($arr['page']) - 1;
+		$page = $page * 44;	
 		$kw=rawurlencode($arr['kw']);
 		$ms=Mange::getMsec();//毫秒时间戳
 		$nyr=Mange::nyr();//年月日
 		$py=parent::pinyin($arr['kw'],1);
-		$url='https://s.taobao.com/search?data-key=s&data-value='.$arr['page'].'&ajax=true&_ksTS='.$ms.'_753&callback=jsonp754&ie=utf8&spm=a21bo.2017.201856-taobao-item.2&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&imgfile=&q='.$kw.'&suggest=0_7&_input_charset=utf-8&wq='.$py.'&suggest_query='.$py.'&source=suggest&p4ppushleft=1%2C48';
+		$url='https://s.taobao.com/search?data-key=s&data-value='.$page.'&ajax=true&_ksTS='.$ms.'_753&callback=jsonp754&ie=utf8&spm=a21bo.2017.201856-taobao-item.2&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&imgfile=&q='.$kw.'&suggest=0_7&_input_charset=utf-8&wq='.$py.'&suggest_query='.$py.'&source=suggest&p4ppushleft=1%2C48';
 		return Mange::decodeUnicode(parent::requerys($url));
 	}
 	
