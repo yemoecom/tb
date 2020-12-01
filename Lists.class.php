@@ -20,8 +20,9 @@ class Lists extends Mange{
 		return parent::requery($url);
 	}
 	//总评价
-	public function _gettotalpl($itemid){
-		$url='https://rate.tmall.com/listTagClouds.htm?itemId='.$itemid;
+	public function _gettotalpl($arr){
+		$arr=$this->_set_arr($arr);
+		$url='https://rate.tmall.com/listTagClouds.htm?itemId='.$arr['itemid'];
 		return parent::curls($url);
 	}
 	
@@ -29,15 +30,16 @@ class Lists extends Mange{
 	获取店铺id号方法
 	url为天猫地址
 	**/
-	public function _getshopid($url=""){ 
-		return parent::getshop($url);
+	public function _getshopid($arr){ 
+		$arr=$this->_set_arr($arr);
+		return parent::getshop($arr['url']);
 	}
 	
 	/*
 	通过产品ID获取店铺信息
 	*/
-	public function _getshopinfo($itemid){
-		$info=$this->_getprodoctinfo($itemid);
+	public function _getshopinfo($arr){
+		$info=$this->_getprodoctinfo($arr);
 		return parent::setshopinfo($info);
 	}
 	
@@ -48,8 +50,7 @@ class Lists extends Mange{
 	page 页数
 	*/
 	public function _getshops($arr){
-		$arr=$this->_set_arr($arr);
-		$arr=$this->_getshopid($arr['url']);
+		$arr=$this->_getshopid($arr);
 		$url='https://scud.m.tmall.com/shop/shop_auction_search.do?spm=a2141.7631565.0.0.95796db2R7ZQWU&suid='.$arr['userId'].'&sort=s&p='.$arr['page'].'&page_size=12&from=h5&shop_id='.$arr['shopId'].'&ajson=1&_tm_source=tmallsearch';
 		return parent::curls($url);
 	}
@@ -59,15 +60,16 @@ class Lists extends Mange{
 	$itemid 产品ID号
 	//https://nswex.com/index.php?route=product/daigou/json&search=url 备用地址
 	*/
-	public function _getprodoctinfo($itemid){
-		$url='https://h5api.m.taobao.com/h5/mtop.taobao.detail.getdetail/6.0/?jsv=2.4.5&appKey=12574478&api=mtop.taobao.detail.getdetail&v=6.0&ttid=2016%40taobao_h5_2.0.0&isSec=0&ecode=0&AntiFlood=true&AntiCreep=true&H5Request=true&data=%7B%22exParams%22%3A%22%7B%5C%22id%5C%22%3A%5C%22'.$itemid.'%5C%22%7D%22%2C%22itemNumId%22%3A%22'.$itemid.'%22%7D';
+	public function _getprodoctinfo($arr){
+		$arr=$this->_set_arr($arr);
+		$url='https://h5api.m.taobao.com/h5/mtop.taobao.detail.getdetail/6.0/?jsv=2.4.5&appKey=12574478&api=mtop.taobao.detail.getdetail&v=6.0&ttid=2016%40taobao_h5_2.0.0&isSec=0&ecode=0&AntiFlood=true&AntiCreep=true&H5Request=true&data=%7B%22exParams%22%3A%22%7B%5C%22id%5C%22%3A%5C%22'.$arr['itemid'].'%5C%22%7D%22%2C%22itemNumId%22%3A%22'.$arr['itemid'].'%22%7D';
 		if(strpos(parent::getejson($url),'login.m.taobao.com')) {
-			$url='https://asiagoodbuy.com/index.php?route=product/daigou/json&search=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D'.$itemid;
+			$url='https://asiagoodbuy.com/index.php?route=product/daigou/json&search=https%3A%2F%2Fdetail.tmall.com%2Fitem.htm%3Fid%3D'.$arr['itemid'];
 			$detail=Mange::decodeUnicode(parent::curls($url));
 		}else{
 			$detail=parent::getejson($url);
 		}
-		$getdesc='https://h5api.m.taobao.com/h5/mtop.taobao.detail.getdesc/6.0/?jsv=2.4.11&appKey=12574478&t=1581137850&sign=123&api=mtop.taobao.detail.getdesc&v=6.0&type=jsonp&dataType=jsonp&timeout=20000&callback=mtopjsonp1&data=%7B%22id%22%3A%22'.$itemid.'%22%2C%22type%22%3A%220%22%2C%22f%22%3A%22TB1456%22%7D';
+		$getdesc='https://h5api.m.taobao.com/h5/mtop.taobao.detail.getdesc/6.0/?jsv=2.4.11&appKey=12574478&t=1581137850&sign=123&api=mtop.taobao.detail.getdesc&v=6.0&type=jsonp&dataType=jsonp&timeout=20000&callback=mtopjsonp1&data=%7B%22id%22%3A%22'.$arr['itemid'].'%22%2C%22type%22%3A%220%22%2C%22f%22%3A%22TB1456%22%7D';
 		$detail_2=parent::getejson($getdesc);
 		
 		return json_encode(
@@ -97,9 +99,8 @@ class Lists extends Mange{
 	shopId  店铺id
 	sellerId 买家ID 
 	*/
-	public function _getcategory($url=""){
-		$r=array();
-		$arr=$this->_getshopid($url);
+	public function _getcategory($arr){
+		$arr=$this->_getshopid($arr);
 		$url='https://h5api.m.taobao.com/h5/mtop.taobao.shop.wireless.category.get/1.0/?jsv=2.5.1&appKey=12574478&t=1605062018138&sign=fb9b22e5d7456760fbf2e39c6a926b1b&api=mtop.taobao.shop.wireless.category.get&v=1.0&H5Request=true&type=jsonp&dataType=jsonp&callback=mtopjsonp2&data=%7B%22shopId%22%3A%22'.$arr['shopId'].'%22%2C%22sellerId%22%3A%22'.$arr['userId'].'%22%7D';
 		return parent::getejson($url);
 	}
