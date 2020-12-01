@@ -1,5 +1,4 @@
 <?php
-
 define('ROOT_PATH',dirname(__FILE__));
 require ROOT_PATH.'/init.php';
 //$mange=new Mange();
@@ -17,35 +16,20 @@ require ROOT_PATH.'/init.php';
 //$arr=array("userid"=>'2457942829',"sort"=>'s',"page"=>'3');
 
 
-$r=array('https://snzdy.tmall.com/','sort'=>'_bid');
+$r=array('https://snzdy.tmall.com/','583016369093');
 $title='桑蚕';
 $list=new Lists();
 //$info=$list->_getpl($r);
-//$info=$list->_getshopid('https://mianyumy.tmall.com');
+//$info=$list->_getshopid($r);
 //$info=$list->_getshops($r);
-//$info=$list->_getprodoctinfo('583016369093');
-//$info=$list->_gettotalpl('583016369093');
+//$info=$list->_getprodoctinfo($r);
+//$info=$list->_gettotalpl($r);
 //$info=$list->_getkwshops($r);
-//$info=$list->_getcategory('https://snzdy.tmall.com/');
-//$info=$list->_getshopinfo('621253405925');
+//$info=$list->_getcategory($r);
+$info=$list->_getshopinfo($r);
 //$info=$list->_getallshops($r);
 //$info=$list->_shoptop($r);
 //$info=$list->title_split($title);
-$info=$list->xialaci($title);
+//$info=$list->xialaci($title);
 
 print_r($info);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
