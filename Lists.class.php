@@ -46,7 +46,7 @@ class Lists extends Mange{
 	
 	/*
 	获取店铺所有产品
-	$url 店铺地址
+	url 店铺地址
 	page 页数
 	*/
 	public function _getshops($arr){
@@ -156,6 +156,17 @@ class Lists extends Mange{
 	*/
 	public function xialaci($kw){
 		return file_get_contents('https://suggest.taobao.com/sug?code=utf-8&q='.$kw.'&_ksTS=1545615822749_1198&k=1&area=c2c&bucketid=11');
+	}
+	/*
+	淘宝关键字搜索里找到的接口！根据关键字搜索店铺和店铺的产品列表
+	kw 关键字
+	page 分页
+	*/
+	public function tblm($arr){
+		$arr=$this->_set_arr($arr);
+		$arr['page']=$arr['page'] * 20;
+		$url='https://tmatch.simba.taobao.com/?name=tbuad&o=j&count=20&p4p=tbcc_p4p_c2015_8_130026_16047286110521604728611130&pid=430409_1006&keyword='.parent::parseurl($arr['kw']).'&offset='.$arr['page'];
+		return parent::requiresss($url);
 	}
 	
 	//天猫关键字搜索
