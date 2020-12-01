@@ -163,6 +163,7 @@ class Mange{
 		
 	 
 	public function requery($url){
+		if(empty($url)) exit('请填入店铺地址');
 			$header = array (
   0 => 'dnt: 1',
   1 => 'accept-encoding: gzip, deflate, br',
@@ -275,6 +276,62 @@ class Mange{
 
 			// $content 是请求结果
 			return $content;
+	}
+	public function requiresss($url){
+		$header = array (
+  0 => 'dnt: 1',
+  1 => 'accept-encoding: gzip, deflate, br',
+  2 => 'accept-language: zh-CN',
+  3 => 'user-agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36',
+  4 => 'accept: */*',
+  5 => 'referer: https://shopsearch.taobao.com/search?q=%E6%94%B6%E7%BA%B3&imgfile=&js=1&stats_click=search_radio_all%3A1&initiative_id=staobaoz_20201107&ie=utf8&isb=1&shop_type=&ratesum=&goodrate=',
+  6 => 'authority: tmatch.simba.taobao.com',
+  7 => 'application/x-javascript; charset=UTF-8',
+);
+    $postData = '';
+     $cookie = 'cookie: thw=cn; enc=W66QfxfCRLAlWeIq^%^2FyrOK0OG8DRKLI7hpHrY7N8kRm3iPrOcjDAR5o4wePc5wUXpPdVvjpKUMWsvEOtZp0fBiQ^%^3D^%^3D; UM_distinctid=17490453f6861b-07826e9cec1d59-50422618-1fa400-17490453f69e56; x=e^%^3D1^%^26p^%^3D*^%^26s^%^3D0^%^26c^%^3D0^%^26f^%^3D0^%^26g^%^3D0^%^26t^%^3D0; hng=CN^%^7Czh-CN^%^7CCNY^%^7C156; cna=iyLyFtr6JmoCAXJmm/iSFV71; lgc=jilaweigc; tracknick=jilaweigc; sgcookie=E100dhMc0^%^2FetTyZzhNaMJhH1SUvcf5m3zM4HiqcsHpovOLCiySVav0Sbki7pQVNAwL8DACkytR7btf85DE4dwTAyrA^%^3D^%^3D; uc3=vt3=F8dCufOEQ^%^2BPEgH3ix88^%^3D^&nk2=CdrmDcu2dGuK^&lg2=UIHiLt3xD8xYTw^%^3D^%^3D^&id2=UoCLFPxf1Xwh; uc4=nk4=0^%^40C^%^2BXjpALcWtv3mB2RgFV9MKL71Rs^%^3D^&id4=0^%^40UOg3szuCuEucwNTs06X0fCBoDJI^%^3D; _cc_=WqG3DMC9EA^%^3D^%^3D; mt=ci=96_1; v=0; t=56a13860486dec6967e1718edda7ef4c; _tb_token_=e3eebb8f57efd; cookie2=75d47fffc3d058b4b4aa44610f632f6b; _samesite_flag_=true; _m_h5_tk=047070f05b7e211c6944b0302bfe3ade_1604731049376; _m_h5_tk_enc=06ecadfd22e6c320f63239836540b60e; xlly_s=1; uc1=cookie14=Uoe0abXJlr^%^2FydA^%^3D^%^3D; l=eBj0K7ZROmw4fmS2BO5wlurza77tyQAf1sPzaNbMiInca69F6QiQhNQV49uHJdtjgt5XvCKzQO7JlRFHW-438tM4QIDMqeAm1fpMRe1..; tfstk=c8wRBRwMuZbul7iYb7CDdAe_8rPRaWQKl3gHpGTbmuYeo9RWwsY7IRoBD_iCaljA.; isg=BLu7S6WnYGSB5lz7wPwcallNSp8lEM8S7uQwGK16r7pMDNjuAOLvY-yOJqxCLCcK'; //需要cookie的话去掉这行的注释
+    $timeout = 10;
+
+    $ch  = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);       //返回数据不直接输出
+    curl_setopt($ch, CURLOPT_ENCODING, "gzip");        //指定gzip压缩
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);    //302/301
+    //SSL
+    if(substr($url, 0, 8) === 'https://') {
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        //error:14077458:SSL routines:SSL23_GET_SERVER_HELLO:reason(1112)解决
+        //值有0-6，请参考手册，值1不行试试其他值
+        //curl_setopt($ch, CURLOPT_SSLVERSION, 1);
+    }
+    //post数据
+    if(!empty($postData)) {
+        curl_setopt($ch, CURLOPT_POST, 1);               //发送POST类型数据
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData); //POST数据，$post可以是数组（multipart/form-data），也可以是拼接参数串（application/x-www-form-urlencoded）
+    }
+    if(!empty($cookie)) {
+        $header[] = $cookie;
+    }
+    if(!empty($header)) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);     //使用header头信息
+    }
+    //超时时间
+    curl_setopt($ch, CURLOPT_TIMEOUT, (int)$timeout);
+    //执行
+    $content = curl_exec($ch);
+    if($error = curl_error($ch)) {
+        //log error
+        error_log($error);
+    }
+    curl_close($ch);
+
+    // $content 是请求结果
+    //echo $content;
+	preg_match_all('/\[\{(.*?)jhs_endtime":""\}\]/',$content,$arr);
+	$a=$arr[0][0];
+	$b=$this->decodeUnicode($a);
+	$b=substr($b,1,-1);
+	return $b;
 	}
 	
 	//淘宝的中文转码
