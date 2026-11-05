@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "name": "nova-github-demo",
+  "version": "0.1.0",
+  "description": "Nova Agent GitHub 在线安装验证插件",
+  "entry": "index.js",
+  "permissions": ["write:workspace"],
+  "author": "yemoecom",
+  "license": "MIT"
+}
